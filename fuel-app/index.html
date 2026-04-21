@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>ТопливоТрек</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+html,body{background:#0d0d1a;color:#fff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;overflow-x:hidden}
+input,button{font-family:inherit;outline:none}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+::-webkit-scrollbar{display:none}
+.app{max-width:430px;margin:0 auto;min-height:100vh;padding-bottom:40px}
+.header{padding:20px 20px 0;background:#0d0d1a;position:sticky;top:0;z-index:50}
+.header-row{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.header-icon{width:36px;height:36px;background:rgba(245,158,11,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.header-title{font-size:18px;font-weight:800;color:#fff;letter-spacing:-0.5px}
+.header-sub{font-size:11px;color:#555}
+.tabs{display:flex;gap:8px;padding-bottom:14px;border-bottom:0.5px solid rgba(255,255,255,0.05)}
+.tab{flex:1;padding:11px 0;border-radius:10px;border:none;cursor:pointer;font-size:13px;font-weight:700;transition:all 0.2s;letter-spacing:0.3px}
+.tab.active{background:#f59e0b;color:#0d0d1a}
+.tab.inactive{background:rgba(255,255,255,0.05);color:#666}
+.form-body,.hist-body{padding:20px}
+.field{margin-bottom:18px}
+.lbl{font-size:11px;color:#555;letter-spacing:1.2px;text-transform:uppercase;display:block;margin-bottom:8px;font-weight:600}
+.inp{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);color:#fff;font-size:16px;caret-color:#f59e0b}
+.inp:focus{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.04)}
+.inp::placeholder{color:#333}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn-field{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);color:#e5e7eb;font-size:15px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;gap:8px}
+.dist-display{width:100%;padding:14px 16px;border-radius:12px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);display:flex;align-items:center;gap:10px;user-select:none;min-height:52px}
+.dist-display.has-val{color:#f59e0b;font-size:20px;font-weight:700}
+.dist-display.no-val{color:#333;font-size:15px}
+.fuel-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.fuel-btn{padding:14px 8px;border-radius:14px;cursor:pointer;text-align:center;transition:all 0.15s;border:0.5px solid rgba(255,255,255,0.08);background:rgba(255,255,255,0.02)}
+.fuel-btn.sel-e{border:1.5px solid #34d399;background:rgba(52,211,153,0.1)}
+.fuel-btn.sel-g{border:1.5px solid #f59e0b;background:rgba(245,158,11,0.1)}
+.fuel-btn.sel-h{border:1.5px solid #60a5fa;background:rgba(96,165,250,0.1)}
+.fuel-icon{font-size:22px;margin-bottom:4px}
+.fuel-name{font-size:12px;font-weight:700;color:#555}
+.fuel-btn.sel-e .fuel-name{color:#34d399}
+.fuel-btn.sel-g .fuel-name{color:#f59e0b}
+.fuel-btn.sel-h .fuel-name{color:#60a5fa}
+.fuel-price{font-size:10px;color:#444;margin-top:2px}
+.fuel-btn.sel-e .fuel-price{color:rgba(52,211,153,0.6)}
+.fuel-btn.sel-g .fuel-price{color:rgba(245,158,11,0.6)}
+.fuel-btn.sel-h .fuel-price{color:rgba(96,165,250,0.6)}
+.price-wrap{position:relative}
+.price-wrap .inp{padding-right:80px}
+.price-unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:10px;color:#555;font-weight:700;pointer-events:none}
+.cost-box{margin-bottom:24px;padding:18px 20px;border-radius:16px;background:rgba(245,158,11,0.08);border:0.5px solid rgba(245,158,11,0.22)}
+.cost-lbl{font-size:11px;color:#888;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:8px}
+.cost-val{font-size:32px;font-weight:800;color:#f59e0b;letter-spacing:-1px}
+.cost-val span{font-size:16px;font-weight:500}
+.cost-detail{font-size:12px;color:#666;margin-top:4px}
+.save-btn{width:100%;padding:18px;border-radius:16px;border:none;font-size:16px;font-weight:800;letter-spacing:0.5px;transition:all 0.3s}
+.save-btn.ready{background:#f59e0b;color:#0d0d1a;cursor:pointer}
+.save-btn.saved{background:#34d399;color:#fff;cursor:default}
+.save-btn.disabled{background:rgba(255,255,255,0.04);color:#333;cursor:not-allowed}
+.filter-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.filter-wrap{position:relative}
+.filter-prefix{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:10px;color:#555;font-weight:700;text-transform:uppercase;pointer-events:none;z-index:1}
+.filter-inp{width:100%;padding:12px 12px 12px 32px;border-radius:12px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);color:#e5e7eb;font-size:13px}
+.reset-btn{background:none;border:none;color:#f59e0b;font-size:12px;cursor:pointer;margin-top:8px;padding:0}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0 20px}
+.s-card{border-radius:14px;padding:16px}
+.s-card.amb{background:rgba(245,158,11,0.08);border:0.5px solid rgba(245,158,11,0.2)}
+.s-card.gry{background:rgba(255,255,255,0.03);border:0.5px solid rgba(255,255,255,0.08)}
+.s-sublbl{font-size:10px;color:#888;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px}
+.s-val{font-size:20px;font-weight:800}
+.s-val.amb{color:#f59e0b}
+.s-val.wht{color:#e5e7eb}
+.s-unit{font-size:10px;color:#666}
+.empty{text-align:center;padding:60px 20px;color:#444}
+.empty-icon{font-size:48px;margin-bottom:12px}
+.empty-title{font-size:16px;font-weight:600;margin-bottom:8px;color:#555}
+.empty-sub{font-size:13px}
+.trip-card{background:rgba(255,255,255,0.025);border:0.5px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;margin-bottom:10px}
+.trip-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.trip-name{font-weight:700;font-size:15px;color:#e5e7eb;margin-bottom:3px}
+.trip-date{font-size:12px;color:#555}
+.trip-cost{font-size:17px;font-weight:800;color:#f59e0b;text-align:right}
+.trip-km{font-size:12px;color:#666;text-align:right}
+.trip-tags{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag{font-size:11px;padding:4px 10px;border-radius:20px;font-weight:700}
+.tag-del{margin-left:auto;background:rgba(239,68,68,0.08);border:0.5px solid rgba(239,68,68,0.2);color:#ef4444;border-radius:8px;padding:4px 10px;cursor:pointer;font-size:12px;font-weight:600}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);display:flex;flex-direction:column;justify-content:flex-end;z-index:300;align-items:center}
+.sheet{background:#161626;border-radius:20px 20px 0 0;padding:20px 20px 32px;width:100%;max-width:430px}
+.handle{width:36px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px}
+.sheet-title{text-align:center;font-size:15px;font-weight:600;color:#fff;margin-bottom:20px}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cal-nav-btn{background:rgba(255,255,255,0.06);border:none;color:#f59e0b;font-size:20px;cursor:pointer;width:38px;height:38px;border-radius:10px}
+.cal-month-lbl{font-weight:700;font-size:16px;color:#fff}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px 2px}
+.cal-dow{text-align:center;font-size:11px;color:#555;padding:4px 0;font-weight:600}
+.cal-day{border:none;border-radius:50%;width:100%;aspect-ratio:1;font-size:14px;cursor:pointer;background:transparent;color:#ccc}
+.cal-day.tod{background:rgba(245,158,11,0.12);color:#f59e0b}
+.cal-day.sel{background:#f59e0b;color:#000;font-weight:700}
+.cancel-btn{width:100%;margin-top:16px;padding:14px;background:rgba(255,255,255,0.04);border:0.5px solid rgba(255,255,255,0.1);border-radius:12px;color:#666;font-size:15px;cursor:pointer}
+.wheel-wrap{display:flex;align-items:center;gap:8px;padding:0 16px}
+.wheel-sep{color:#f59e0b;font-size:32px;font-weight:700;user-select:none;line-height:1;flex-shrink:0}
+.w-col{flex:1;position:relative;overflow:hidden;height:230px}
+.w-hl{position:absolute;top:92px;left:0;right:0;height:46px;background:rgba(245,158,11,0.07);border-top:1px solid rgba(245,158,11,0.22);border-bottom:1px solid rgba(245,158,11,0.22);pointer-events:none;z-index:1;border-radius:8px}
+.w-ft{position:absolute;top:0;left:0;right:0;height:92px;background:linear-gradient(to bottom,#161626 20%,transparent);pointer-events:none;z-index:2}
+.w-fb{position:absolute;bottom:0;left:0;right:0;height:92px;background:linear-gradient(to top,#161626 20%,transparent);pointer-events:none;z-index:2}
+.w-scroll{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.w-scroll::-webkit-scrollbar{display:none}
+.w-inner{padding:92px 0}
+.w-item{height:46px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;cursor:pointer;user-select:none}
+.w-item span{font-size:22px;color:rgba(255,255,255,0.2);font-weight:400;transition:all 0.1s;font-variant-numeric:tabular-nums}
+.w-item.act span{font-size:30px;color:#f59e0b;font-weight:700}
+.confirm-btn{width:100%;margin-top:20px;padding:16px;background:#f59e0b;border:none;border-radius:14px;color:#0d0d1a;font-size:16px;font-weight:800;cursor:pointer}
+.del-confirm-btn{width:100%;padding:15px;border-radius:14px;border:none;background:#ef4444;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:8px}
+.del-cancel-btn{width:100%;padding:14px;border-radius:14px;border:none;background:rgba(255,255,255,0.05);color:#888;font-size:15px;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-row">
+      <div class="header-icon">⛽</div>
+      <div>
+        <div class="header-title">ТопливоТрек</div>
+        <div class="header-sub" id="trip-count">0 поездок сохранено</div>
+      </div>
+    </div>
+    <div class="tabs">
+      <button class="tab active" id="tab-form" onclick="switchTab('form')">➕ Новая</button>
+      <button class="tab inactive" id="tab-hist" onclick="switchTab('hist')">📋 История</button>
+    </div>
+  </div>
+
+  <!-- FORM -->
+  <div id="view-form" class="form-body">
+    <div class="field">
+      <div class="row2">
+        <div>
+          <span class="lbl">Дата</span>
+          <button class="btn-field" onclick="openCal()"><span>📅</span><span id="disp-date"></span></button>
+        </div>
+        <div>
+          <span class="lbl">Время</span>
+          <button class="btn-field" onclick="openTime()"><span>🕐</span><span id="disp-time"></span></button>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl">Пункт назначения</span>
+      <input class="inp" id="inp-dest" type="text" placeholder="Офис, Рынок, Аэропорт..." oninput="calc()"/>
+    </div>
+    <div class="field">
+      <div class="row2">
+        <div>
+          <span class="lbl">Пробег ДО (км)</span>
+          <input class="inp" id="inp-ob" type="number" inputmode="numeric" placeholder="0" oninput="calc()"/>
+        </div>
+        <div>
+          <span class="lbl">Пробег ПОСЛЕ (км)</span>
+          <input class="inp" id="inp-oa" type="number" inputmode="numeric" placeholder="0" oninput="calc()"/>
+        </div>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl">Дистанция (авто)</span>
+      <div class="dist-display no-val" id="dist-box"><span>🛣️</span><span id="dist-txt">— автоматически</span></div>
+    </div>
+    <div class="field">
+      <span class="lbl">Тип топлива</span>
+      <div class="fuel-grid">
+        <button class="fuel-btn" id="fb-e" onclick="setFuel('e')">
+          <div class="fuel-icon">⚡</div><div class="fuel-name">Электр</div><div class="fuel-price">550 сум</div>
+        </button>
+        <button class="fuel-btn sel-g" id="fb-g" onclick="setFuel('g')">
+          <div class="fuel-icon">⛽</div><div class="fuel-name">Бензин</div><div class="fuel-price">1250 сум</div>
+        </button>
+        <button class="fuel-btn" id="fb-h" onclick="setFuel('h')">
+          <div class="fuel-icon">🔋</div><div class="fuel-name">Гибрид</div><div class="fuel-price">1000 сум</div>
+        </button>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl">Цена топлива (сум / км)</span>
+      <div class="price-wrap">
+        <input class="inp" id="inp-price" type="number" inputmode="numeric" value="1250" oninput="calc()"/>
+        <div class="price-unit">СУМ/КМ</div>
+      </div>
+    </div>
+    <div id="cost-box" class="cost-box" style="display:none">
+      <div class="cost-lbl">💰 Сумма поездки</div>
+      <div class="cost-val" id="cost-val">0 <span>сум</span></div>
+      <div class="cost-detail" id="cost-det"></div>
+    </div>
+    <button class="save-btn disabled" id="save-btn" onclick="saveTrip()">💾 Сохранить поездку</button>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="view-hist" class="hist-body" style="display:none">
+    <div class="field">
+      <span class="lbl">Период</span>
+      <div class="filter-row">
+        <div class="filter-wrap">
+          <div class="filter-prefix">от</div>
+          <input type="date" class="filter-inp" id="f-from" oninput="renderHist()"/>
+        </div>
+        <div class="filter-wrap">
+          <div class="filter-prefix">до</div>
+          <input type="date" class="filter-inp" id="f-to" oninput="renderHist()"/>
+        </div>
+      </div>
+      <button class="reset-btn" id="reset-btn" onclick="resetFilter()" style="display:none">Сбросить фильтр ×</button>
+    </div>
+    <div id="sum-grid" class="summary-grid" style="display:none">
+      <div class="s-card amb"><div class="s-sublbl">Итого сумма</div><div class="s-val amb" id="sum-cost">0</div><div class="s-unit">сум</div></div>
+      <div class="s-card gry"><div class="s-sublbl" id="sum-cnt">0 поездок</div><div class="s-val wht" id="sum-km">0</div><div class="s-unit">км всего</div></div>
+    </div>
+    <div id="trips-list"></div>
+  </div>
+</div>
+
+<!-- CALENDAR -->
+<div id="m-cal" class="overlay" style="display:none" onclick="closeCal()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+      <div class="cal-month-lbl" id="cal-lbl"></div>
+      <button class="cal-nav-btn" onclick="calNext()">›</button>
+    </div>
+    <div class="cal-grid" id="cal-dow"></div>
+    <div class="cal-grid" id="cal-days"></div>
+    <button class="cancel-btn" onclick="closeCal()">Отмена</button>
+  </div>
+</div>
+
+<!-- TIME -->
+<div id="m-time" class="overlay" style="display:none" onclick="closeTime()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div class="sheet-title">Выбор времени</div>
+    <div class="wheel-wrap">
+      <div class="w-col">
+        <div class="w-hl"></div><div class="w-ft"></div><div class="w-fb"></div>
+        <div class="w-scroll" id="wh" onscroll="onScroll('h')"><div class="w-inner" id="wh-in"></div></div>
+      </div>
+      <div class="wheel-sep">:</div>
+      <div class="w-col">
+        <div class="w-hl"></div><div class="w-ft"></div><div class="w-fb"></div>
+        <div class="w-scroll" id="wm" onscroll="onScroll('m')"><div class="w-inner" id="wm-in"></div></div>
+      </div>
+    </div>
+    <button class="confirm-btn" onclick="confirmTime()">Подтвердить</button>
+    <button class="cancel-btn" onclick="closeTime()">Отмена</button>
+  </div>
+</div>
+
+<!-- DELETE -->
+<div id="m-del" class="overlay" style="display:none" onclick="closeDel()">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="handle"></div>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:28px;margin-bottom:10px">🗑️</div>
+      <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">Удалить поездку?</div>
+      <div style="font-size:13px;color:#666">Это действие нельзя отменить</div>
+    </div>
+    <button class="del-confirm-btn" onclick="confirmDel()">Удалить</button>
+    <button class="del-cancel-btn" onclick="closeDel()">Отмена</button>
+  </div>
+</div>
+
+<script>
+const LS='fuel_v3';
+const MONTHS=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const WD=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+const FUEL={e:{l:'Электр',p:550,i:'⚡',c:'#34d399'},g:{l:'Бензин',p:1250,i:'⛽',c:'#f59e0b'},h:{l:'Гибрид',p:1000,i:'🔋',c:'#60a5fa'}};
+const p2=n=>String(n).padStart(2,'0');
+const fmt=d=>{const[y,m,day]=d.split('-');return`${day}.${m}.${y}`};
+const num=n=>Number(n).toLocaleString('ru-RU');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const $=id=>document.getElementById(id);
+
+let trips=[];
+let fuel='g';
+let selDate='',selTime='';
+let cy,cm,th,tm,delId;
+const IH=46;
+
+function init(){
+  try{trips=JSON.parse(localStorage.getItem(LS)||'[]')}catch{trips=[]}
+  const now=new Date();
+  selDate=now.toISOString().split('T')[0];
+  selTime=p2(now.getHours())+':'+p2(now.getMinutes());
+  $('disp-date').textContent=fmt(selDate);
+  $('disp-time').textContent=selTime;
+  cy=now.getFullYear();cm=now.getMonth();
+  th=now.getHours();tm=now.getMinutes();
+  buildWheels();
+  updCount();
+}
+
+function updCount(){$('trip-count').textContent=trips.length+' поездок сохранено'}
+
+function switchTab(v){
+  $('view-form').style.display=v==='form'?'block':'none';
+  $('view-hist').style.display=v==='hist'?'block':'none';
+  $('tab-form').className='tab '+(v==='form'?'active':'inactive');
+  $('tab-hist').className='tab '+(v==='hist'?'active':'inactive');
+  if(v==='hist')renderHist();
+}
+
+function setFuel(f){
+  fuel=f;
+  ['e','g','h'].forEach(t=>{
+    $('fb-'+t).className='fuel-btn'+(t===f?' sel-'+t:'');
+  });
+  $('inp-price').value=FUEL[f].p;
+  calc();
+}
+
+function calc(){
+  const ob=parseFloat($('inp-ob').value)||0;
+  const oa=parseFloat($('inp-oa').value)||0;
+  const pr=parseFloat($('inp-price').value)||0;
+  const dest=$('inp-dest').value.trim();
+  const dist=(oa>ob)?oa-ob:0;
+  const cost=dist*pr;
+  const db=$('dist-box');
+  if(dist>0){db.className='dist-display has-val';$('dist-txt').textContent=dist+' км';}
+  else{db.className='dist-display no-val';$('dist-txt').textContent='— автоматически';}
+  const cb=$('cost-box');
+  if(dist>0){cb.style.display='block';$('cost-val').innerHTML=num(cost)+' <span>сум</span>';$('cost-det').textContent=dist+' км × '+num(pr)+' сум/км';}
+  else cb.style.display='none';
+  const btn=$('save-btn');
+  const ok=dest&&ob>0&&oa>ob;
+  btn.className='save-btn '+(ok?'ready':'disabled');
+}
+
+function saveTrip(){
+  const ob=parseFloat($('inp-ob').value)||0;
+  const oa=parseFloat($('inp-oa').value)||0;
+  const pr=parseFloat($('inp-price').value)||0;
+  const dest=$('inp-dest').value.trim();
+  const dist=oa-ob;
+  if(!dest||ob<=0||oa<=ob)return;
+  const t={id:Date.now(),date:selDate,time:selTime,destination:dest,odomBefore:ob,odomAfter:oa,distance:dist,fuelType:fuel,fuelPrice:pr,tripCost:dist*pr};
+  trips.unshift(t);
+  try{localStorage.setItem(LS,JSON.stringify(trips))}catch{}
+  $('inp-dest').value='';$('inp-ob').value='';$('inp-oa').value='';
+  calc();updCount();
+  const btn=$('save-btn');
+  btn.className='save-btn saved';btn.textContent='✅ Сохранено!';
+  setTimeout(()=>{btn.className='save-btn disabled';btn.textContent='💾 Сохранить поездку';},2000);
+}
+
+function renderHist(){
+  const from=$('f-from').value,to=$('f-to').value;
+  $('reset-btn').style.display=(from||to)?'block':'none';
+  const f=trips.filter(t=>{
+    if(from&&t.date<from)return false;
+    if(to&&t.date>to)return false;
+    return true;
+  });
+  const tc=f.reduce((s,t)=>s+t.tripCost,0);
+  const td=f.reduce((s,t)=>s+t.distance,0);
+  const sg=$('sum-grid');
+  if(f.length>0){sg.style.display='grid';$('sum-cost').textContent=num(tc);$('sum-cnt').textContent=f.length+' поездок';$('sum-km').textContent=num(td);}
+  else sg.style.display='none';
+  const list=$('trips-list');
+  if(f.length===0){list.innerHTML='<div class="empty"><div class="empty-icon">🛣️</div><div class="empty-title">Нет поездок</div><div class="empty-sub">Добавьте первую поездку на вкладке «Новая»</div></div>';return;}
+  list.innerHTML=f.map(t=>{
+    const fl=FUEL[t.fuelType];
+    return`<div class="trip-card"><div class="trip-top"><div><div class="trip-name">${esc(t.destination)}</div><div class="trip-date">${fmt(t.date)} · ${t.time}</div></div><div><div class="trip-cost">${num(t.tripCost)} сум</div><div class="trip-km">${t.distance} км</div></div></div><div class="trip-tags"><span class="tag" style="background:${fl.c}18;color:${fl.c};border:0.5px solid ${fl.c}30">${fl.i} ${fl.l}</span><span class="tag" style="background:rgba(255,255,255,0.04);color:#666;border:0.5px solid rgba(255,255,255,0.08)">${num(t.fuelPrice)} сум/км</span><button class="tag-del" onclick="openDel(${t.id})">✕</button></div></div>`;
+  }).join('');
+}
+
+function resetFilter(){$('f-from').value='';$('f-to').value='';renderHist();}
+
+function openDel(id){delId=id;$('m-del').style.display='flex'}
+function closeDel(){delId=null;$('m-del').style.display='none'}
+function confirmDel(){
+  if(!delId)return;
+  trips=trips.filter(t=>t.id!==delId);
+  try{localStorage.setItem(LS,JSON.stringify(trips))}catch{}
+  updCount();closeDel();renderHist();
+}
+
+// CALENDAR
+function openCal(){
+  const[y,m]=selDate.split('-').map(Number);cy=y;cm=m-1;
+  renderCal();$('m-cal').style.display='flex';
+}
+function closeCal(){$('m-cal').style.display='none'}
+function calPrev(){cm--;if(cm<0){cm=11;cy--;}renderCal();}
+function calNext(){cm++;if(cm>11){cm=0;cy++;}renderCal();}
+function renderCal(){
+  $('cal-lbl').textContent=MONTHS[cm]+' '+cy;
+  $('cal-dow').innerHTML=WD.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const[sy,sm,sd]=selDate.split('-').map(Number);
+  const now=new Date();
+  const dim=new Date(cy,cm+1,0).getDate();
+  const rf=new Date(cy,cm,1).getDay();
+  const fd=rf===0?6:rf-1;
+  let h='';
+  for(let i=0;i<fd;i++)h+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const isSel=d===sd&&cm+1===sm&&cy===sy;
+    const isTod=d===now.getDate()&&cm===now.getMonth()&&cy===now.getFullYear();
+    const cls='cal-day'+(isSel?' sel':isTod?' tod':'');
+    h+=`<button class="${cls}" onclick="pickDay(${d})">${d}</button>`;
+  }
+  $('cal-days').innerHTML=h;
+}
+function pickDay(d){selDate=cy+'-'+p2(cm+1)+'-'+p2(d);$('disp-date').textContent=fmt(selDate);closeCal();}
+
+// TIME WHEEL
+function buildWheels(){
+  buildW('h',24,th);buildW('m',60,tm);
+}
+function buildW(t,cnt,sel){
+  const inner=$(t==='h'?'wh-in':'wm-in');
+  inner.innerHTML=Array.from({length:cnt},(_,i)=>`<div class="w-item${i===sel?' act':''}" data-v="${i}" onclick="clickW('${t}',${i})"><span>${p2(i)}</span></div>`).join('');
+  setTimeout(()=>{$(t==='h'?'wh':'wm').scrollTop=sel*IH;},30);
+}
+function openTime(){
+  const[h,m]=selTime.split(':').map(Number);th=h;tm=m;
+  buildW('h',24,th);buildW('m',60,tm);
+  $('m-time').style.display='flex';
+}
+function closeTime(){$('m-time').style.display='none'}
+function onScroll(t){
+  const sc=$(t==='h'?'wh':'wm');
+  const idx=Math.round(sc.scrollTop/IH);
+  const max=t==='h'?23:59;
+  const val=Math.max(0,Math.min(max,idx));
+  if(t==='h')th=val;else tm=val;
+  const inner=$(t==='h'?'wh-in':'wm-in');
+  inner.querySelectorAll('.w-item').forEach(el=>{
+    el.className='w-item'+(parseInt(el.dataset.v)===val?' act':'');
+  });
+}
+function clickW(t,val){
+  if(t==='h')th=val;else tm=val;
+  const sc=$(t==='h'?'wh':'wm');
+  sc.scrollTo({top:val*IH,behavior:'smooth'});
+}
+function confirmTime(){selTime=p2(th)+':'+p2(tm);$('disp-time').textContent=selTime;closeTime();}
+
+init();
+</script>
+</body>
+</html>
